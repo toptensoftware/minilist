@@ -1,8 +1,14 @@
 import { css } from "@codeonlyjs/core";
 import { Dialog } from "./Dialog.js";
+import { db } from "./Database.js";
 
 export class NewListDialog extends Dialog
 {
+    onCreate()
+    {
+        db.createList(this.listname.value);
+    }
+
     // This template will be "re-templated" by the base Dialog class
     // to wrap it in <dialog>, <form> etc...
     static template = {
@@ -11,12 +17,14 @@ export class NewListDialog extends Dialog
         content: {
             type: "input type=text",
             placeholder: "Enter name of new list",
+            bind: "listname",
         },
         footer: [
             {
                 type: "button",
                 $: "Create",
                 class: "accent",
+                on_click: "onCreate",
             },
             {
                 type: "button",

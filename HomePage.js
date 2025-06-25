@@ -1,31 +1,15 @@
-import { Component, css, router, $ } from "@codeonlyjs/core";
+import { Component, css, router, $, notify } from "@codeonlyjs/core";
 import { config } from "./config.js";
 import { HomeHeader } from "./HomeHeader.js";
 import { HomeFooter } from "./HomeFooter.js";
+import { db } from "./Database.js";
 
 export class HomePage extends Component
 {
     constructor()
     {
         super();
-        this.items = [
-            {
-                name: "Groceries",
-                items: [
-                    { name: "Apples", checked: false },
-                    { name: "Pears", checked: false },
-                    { name: "Bananas", checked: true },
-                ]
-            },
-            {
-                name: "Cantabile",
-                items: [],
-            },
-            {
-                name: "This Week",
-                items: [],
-            }
-        ]
+        this.listen(notify, "reloadLists")
     }
 
     onEditMode(ev)
@@ -38,14 +22,13 @@ export class HomePage extends Component
 
     static format_counts(list)
     {
-        let checked_count = list.items.filter(x => x.checked).length;
-        if (checked_count)
+        if (list.checked)
         {
-            return `${list.items.length - checked_count} of ${list.items.length} remaining`;
+            return `${list.count - list.checked} of ${list.count} remaining`;
         }
         else
         {
-            return `${list.items.length} items`;
+            return `${list.count} items`;
         }
     }
 
@@ -56,7 +39,7 @@ export class HomePage extends Component
             bind: "main",
             $: {
                 foreach: {
-                    items: c => c.items,
+                    items: c => db.lists,
                 },
                 type: "div",
                 class: "list-item",
@@ -68,7 +51,7 @@ export class HomePage extends Component
                             type: "img",
                             src: "/public/DeleteIcon.svg",
                         },
-                        on_click: () => alert("del"),
+                        on_click: i => db.deleteList(i.name),
                     },
                     {
                         type: "div",
