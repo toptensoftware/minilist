@@ -5,10 +5,25 @@ import { NewListDialog } from "./NewListDialog.js";
 // The main footer
 export class HomeFooter extends Component
 {
+    constructor()
+    {
+        super();
+        this.editMode = false;
+    }
+
     onNewList()
     {
         let dlg = new NewListDialog();
         dlg.showModal();
+    }
+
+    onEdit()
+    {
+        this.editMode = !this.editMode;
+        let ev = new Event("editMode");
+        ev.editMode = this.editMode;
+        this.dispatchEvent(ev);
+        this.invalidate();
     }
 
     static template = {
@@ -19,7 +34,9 @@ export class HomeFooter extends Component
                 $: [
                     {
                         type: "button",
-                        $: "Edit",
+                        $: c => c.editMode ? "Done" : "Edit",
+                        class_accent: c => c.editMode,
+                        on_click: "onEdit",
                     }
                 ]
             },

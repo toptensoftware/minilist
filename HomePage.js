@@ -28,6 +28,14 @@ export class HomePage extends Component
         ]
     }
 
+    onEditMode(ev)
+    {
+        if (ev.editMode)
+            this.main.classList.add("edit-mode");
+        else
+            this.main.classList.remove('edit-mode');
+    }
+
     static format_counts(list)
     {
         let checked_count = list.items.filter(x => x.checked).length;
@@ -45,6 +53,7 @@ export class HomePage extends Component
         HomeHeader,
         {
             type: "main",
+            bind: "main",
             $: {
                 foreach: {
                     items: c => c.items,
@@ -53,18 +62,44 @@ export class HomePage extends Component
                 class: "list-item",
                 $: [
                     {
-                        type: "h3",
-                        $: i => i.name,
+                        type: "div",
+                        class: "del-button",
+                        $: {
+                            type: "img",
+                            src: "/public/DeleteIcon.svg",
+                        },
+                        on_click: () => alert("del"),
                     },
                     {
                         type: "div",
-                        class: "counts",
-                        $: i => HomePage.format_counts(i),
-                    }  
+                        class: "body",
+                        $: [
+                            {
+                                type: "h3",
+                                $: i => i.name,
+                            },
+                            {
+                                type: "div",
+                                class: "counts",
+                                $: i => HomePage.format_counts(i),
+                            }  
+                        ]
+                    },
+                    {
+                        type: "div",
+                        class: "move-handle",
+                        $: {
+                            type: "img",
+                            src: "/public/MoveHandle.svg",
+                        },
+                    },
                 ]
             }
         },
-        HomeFooter
+        {
+            type: HomeFooter,
+            on_editMode: "onEditMode",
+        }
     ]
 }
 
@@ -76,22 +111,62 @@ main
 
     .list-item
     {
+        display: flex;
+        flex-direction: row;
         padding: 5px;
         user-select: none; 
 
-        h3 
-        { 
-            margin: 0; 
-            padding: 0;
-            font-size: 1rem;
-            color: var(--accent-color);
-        }
-        
-        .counts
+        .del-button
         {
+            display: none;
+            padding: 9px 12px 0 12px;
+            img
+            {
+                width: 25px;
+                height: 25px;
+            }
+        }
+
+        .move-handle
+        {
+            display: none;
+            padding: 9px 12px 0 12px;
+            img
+            {
+                width: 45px;
+                height: 45px;
+            }
+        }
+
+
+        .body
+        {
+            flex-grow: 1;
+            h3 
+            { 
+                margin: 0; 
+                padding: 0;
+                font-size: 1rem;
+                color: var(--accent-color);
+            }
+            
+            .counts
+            {
+            }
         }
 
         border-bottom: 1px solid var(--gridline-color);
+    }
+
+    &.edit-mode
+    {
+        .list-item
+        {
+            .del-button, .move-handle
+            {
+                display: block;
+            }
+        }
     }
 }
 `
