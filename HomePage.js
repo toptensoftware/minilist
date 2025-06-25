@@ -32,17 +32,66 @@ export class HomePage extends Component
         }
     }
 
+    onPointerDown(ev)
+    {
+        // Is it on a handle
+        let handle = ev.target.closest(".move-handle");
+        if (!handle)
+            return;
+
+        // Get the list item  and it's name
+        let item = handle.closest(".list-item");
+        if (!item)
+            return;
+        let name = item.dataset.name;
+
+        // Stop event, we'll handle this thanks.
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        let self = this;
+
+        // Setup event handlers
+        this.main.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", onPointerUp);
+
+        let originalY = ev.pageY;
+        item.classList.add("dragging");
+
+        function onPointerMove(ev)
+        {
+            let delta = ev.pageY-originalY;
+            item.style.transform = `translateY(${delta}px)`;
+        }
+        function onPointerUp(ev)
+        {
+            item.style.transform = ``;
+            item.classList.remove("dragging");
+            finish();
+        }
+
+        function finish()
+        {
+            self.main.removeEventListener("pointermove", onPointerMove);
+            window.removeEventListener("pointerup", onPointerUp);
+        }
+
+
+    }
+
     static template = [
         HomeHeader,
         {
             type: "main",
             bind: "main",
+            on_pointerdown: "onPointerDown",
             $: {
                 foreach: {
                     items: c => db.lists,
                 },
                 type: "div",
                 class: "list-item",
+                "data-name": i => i.name,
                 $: [
                     {
                         type: "div",
@@ -99,6 +148,13 @@ main
         padding: 5px;
         user-select: none; 
 
+        &.dragging
+        {
+            background-color: var(--body-back-color);
+            z-index: -1;
+            border-top: 1px solid var(--gridline-color);
+        }
+
         .del-button
         {
             display: none;
@@ -114,6 +170,7 @@ main
         {
             display: none;
             padding: 9px 12px 0 12px;
+            touch-action: none;
             img
             {
                 width: 45px;
@@ -139,6 +196,7 @@ main
         }
 
         border-bottom: 1px solid var(--gridline-color);
+        border-top: 1px solid #00000000;
     }
 
     &.edit-mode
