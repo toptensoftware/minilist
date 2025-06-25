@@ -10,7 +10,6 @@ export class NewListDialog extends Dialog
         id: "new-list-dialog",
         content: {
             type: "input type=text",
-            
         },
         footer: [
             {
