@@ -113,6 +113,15 @@ class Database
         this.onListsChanged();
     }
 
+    moveList(fromIndex, toIndex)
+    {
+        let list = this.#lists[fromIndex];
+        this.#lists.splice(fromIndex, 1);
+        this.#lists.splice(toIndex, 0, list);
+        this.saveOrder();
+        this.onListsChanged();
+    }
+
     onListsChanged()
     {
         notify("reloadLists");

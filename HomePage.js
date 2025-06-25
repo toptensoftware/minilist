@@ -3,6 +3,7 @@ import { config } from "./config.js";
 import { HomeHeader } from "./HomeHeader.js";
 import { HomeFooter } from "./HomeFooter.js";
 import { db } from "./Database.js";
+import { DragHandler } from "./DragHandler.js";
 
 export class HomePage extends Component
 {
@@ -10,7 +11,16 @@ export class HomePage extends Component
     {
         super();
         this.listen(notify, "reloadLists")
+        this.create();
+        this.#dragHandler = new DragHandler({
+            elList: this.main,
+            selItem: ".list-item",
+            selHandle: ".move-handle",
+            moveItem: (from, to) => db.moveList(from, to),
+        });
     }
+
+    #dragHandler;
 
     onEditMode(ev)
     {
@@ -32,59 +42,11 @@ export class HomePage extends Component
         }
     }
 
-    onPointerDown(ev)
-    {
-        // Is it on a handle
-        let handle = ev.target.closest(".move-handle");
-        if (!handle)
-            return;
-
-        // Get the list item  and it's name
-        let item = handle.closest(".list-item");
-        if (!item)
-            return;
-        let name = item.dataset.name;
-
-        // Stop event, we'll handle this thanks.
-        ev.preventDefault();
-        ev.stopPropagation();
-
-        let self = this;
-
-        // Setup event handlers
-        this.main.addEventListener("pointermove", onPointerMove);
-        window.addEventListener("pointerup", onPointerUp);
-
-        let originalY = ev.pageY;
-        item.classList.add("dragging");
-
-        function onPointerMove(ev)
-        {
-            let delta = ev.pageY-originalY;
-            item.style.transform = `translateY(${delta}px)`;
-        }
-        function onPointerUp(ev)
-        {
-            item.style.transform = ``;
-            item.classList.remove("dragging");
-            finish();
-        }
-
-        function finish()
-        {
-            self.main.removeEventListener("pointermove", onPointerMove);
-            window.removeEventListener("pointerup", onPointerUp);
-        }
-
-
-    }
-
     static template = [
         HomeHeader,
         {
             type: "main",
             bind: "main",
-            on_pointerdown: "onPointerDown",
             $: {
                 foreach: {
                     items: c => db.lists,
@@ -150,8 +112,14 @@ main
 
         &.dragging
         {
+            position: relative;
             background-color: var(--body-back-color);
-            z-index: -1;
+            z-index: 1;
+            border-top: 1px solid var(--gridline-color);
+        }
+
+        &.after-gap
+        {
             border-top: 1px solid var(--gridline-color);
         }
 
