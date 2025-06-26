@@ -67,7 +67,7 @@ export class HomePage extends Component
                                 type: "img", 
                                 src: "/public/logo.svg",
                             },
-                            config.appName + "!",
+                            config.appName + " v0.0.9",
                         ]
                     },
                     {
