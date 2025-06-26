@@ -103,6 +103,14 @@ main
     padding-top: var(--header-height);
     padding-bottom: var(--footer-height);
 
+    &.drag-active
+    {
+        .list-item:not(.dragging)
+        {
+            transition: transform 0.2s ease;
+        }
+    }
+
     .list-item
     {
         display: flex;
