@@ -1,4 +1,4 @@
-<html lang="en">
+<html lang="en" manifest="cache.manifest">
 <head>
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="/public/Icon128.png" />
@@ -40,6 +40,7 @@ body
 </head>
 <body>
     <script type="module">
+        window.applicationCache?.addEventListener('updateready', () => window.location.reload(), false);
         if (window.navigator.standalone)
             document.documentElement.classList.add("standalone");
         import { main } from "./Main.js";
