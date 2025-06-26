@@ -36,7 +36,7 @@ export class DragHandler
         }
 
         // Get the parent scroller
-        let scroller = getScrollParent(this.options.elList);
+        let scroller = getScrollParent(this.options.elList) ?? this.options.elList;
         let scrollerTop = scroller.scrollTop;
 
         // Get the bounding rectangles of all items in page coords
