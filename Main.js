@@ -2,6 +2,7 @@ import { Component, css, router } from "@codeonlyjs/core";
 import { Meta } from "./Meta.js";
 
 import "./HomePage.js";
+import "./ListPage.js";
 import "./NotFoundPage.js";
 
 // Main application

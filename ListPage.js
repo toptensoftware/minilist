@@ -2,35 +2,30 @@ import { Component, css, router, html, notify } from "@codeonlyjs/core";
 import { config } from "./config.js";
 import { db } from "./Database.js";
 import { DragHandler } from "./DragHandler.js";
-import { NewListDialog } from "./NewListDialog.js";
+import { EditItemDialog } from "./EditItemDialog.js";
 
-export class HomePage extends Component
+export class ListPage extends Component
 {
-    constructor()
+    constructor(list)
     {
         super();
-        this.listen(notify, "reloadLists")
+        this.#list = list;
         this.create();
         this.#dragHandler = new DragHandler({
-            elList: this.list,
+            elList: this.elList,
             selItem: ".list-item",
             selHandle: ".move-handle",
             moveItem: (from, to) => db.moveList(from, to),
             getScrollBounds: () => ({
-                top: this.main.querySelector("header").getBoundingClientRect().bottom,
-                bottom: this.main.querySelector("footer").getBoundingClientRect().top,
+                top: this.elMain.querySelector("header").getBoundingClientRect().bottom,
+                bottom: this.elMain.querySelector("footer").getBoundingClientRect().top,
             })
         });
         this.editMode = false;
     }
 
+    #list;
     #dragHandler;
-
-    onNewList()
-    {
-        let dlg = new NewListDialog();
-        dlg.showModal();
-    }
 
     onEdit()
     {
@@ -38,61 +33,41 @@ export class HomePage extends Component
         this.invalidate();
     }
 
-
-    static format_counts(list)
+    onNewItem()
     {
-        if (list.checked)
-        {
-            return `${list.count - list.checked} of ${list.count} remaining`;
-        }
-        else
-        {
-            return `${list.count} items`;
-        }
+        let dlg = new EditItemDialog(null);
+        dlg.showModal();
     }
 
+    get pageTitle() { return this.#list.name; }
+    get list() { return this.#list; }
+
+
     static template = {
-        type: "main #home",
-        bind: "main",
+        type: "main #list",
+        bind: "elMain",
         "class_edit-mode": c => c.editMode,
         $: [
             {
                 type: "header",
                 $: [
                     {
-                        type: "a .title",
+                        type: "a .back",
                         href: "/",
-                        $: [
-                            { 
-                                type: "img", 
-                                src: "/public/logo.svg",
-                            },
-                            config.appName + " v0.0.11",
-                        ]
+                        text: "< Back"
                     },
                     {
-                        type: "div .buttons",
-                        $: [
-                            {
-                                type: "input type=checkbox .theme-switch",
-                                on_click: () => window.stylish.toggleTheme(),
-                            },
-                            {
-                                // Initialize the state of the theme-switch.
-                                // We do this as early as possible to prevent it flicking on/off as page hydrates.
-                                type: "script",
-                                text: html(`document.querySelector(".theme-switch").checked = window.stylish.darkMode;`),
-                            }                    
-                        ]
-                    }
+                        type: "div .title",
+                        text: c => c.pageTitle,
+                    },
                 ]
             },
             {
                 type: "div .list",
-                bind: "list",
+                bind: "elList",
                 $: {
                     foreach: {
-                        items: c => db.lists,
+                        items: c => c.list.items,
                     },
                     type: "div",
                     class: "list-item",
@@ -105,23 +80,12 @@ export class HomePage extends Component
                                 type: "img",
                                 src: "/public/DeleteIcon.svg",
                             },
-                            on_click: i => db.deleteList(i.name),
+                            //on_click: i => db.deleteList(i.name),
                         },
                         {
-                            type: "a",
+                            type: "div",
                             class: "body",
-                            href: i => `/list/${i.name}`,
-                            $: [
-                                {
-                                    type: "h3",
-                                    $: i => i.name,
-                                },
-                                {
-                                    type: "div",
-                                    class: "counts",
-                                    $: i => HomePage.format_counts(i),
-                                }  
-                            ]
+                            $: i => i.name,
                         },
                         {
                             type: "div",
@@ -153,8 +117,8 @@ export class HomePage extends Component
                         $: [
                             {
                                 type: "button",
-                                $: "New List",
-                                on_click: "onNewList",
+                                $: "New Item",
+                                on_click: "onNewItem",
                             },
                         ]
                     }
@@ -181,7 +145,7 @@ css`
     }
 }
 
-#home
+#list
 {
     header
     {
@@ -199,39 +163,23 @@ css`
         padding-right: 10px;
         background-color: rgb(from var(--back-color) r g b / 75%);
         z-index: 1;
+        position: relative;
 
         .title 
         {
-            flex-grow: 1;
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
             display: flex;
+            justify-content: center;
             align-items: center;
-            color: var(--body-fore-color);
-            transition: opacity 0.2s;
-
-            &:hover
-            {
-                opacity: 75%;
-            }
-
-            img
-            {
-                height: calc(var(--header-height) - 25px);
-                padding-right: 10px
-            }
         }
-
-
-        .buttons
+        .back
         {
-            font-size: 12pt;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-
-            .theme-switch
-            {
-                transform: translateY(-1.5px);
-            }
+            z-index: 1;
+            color: var(--body-text-color);
         }
     }
 
@@ -364,9 +312,10 @@ css`
 `
 
 router.register({
-    pattern: "/",
+    pattern: "/list/:listname",
     match: (to) => {
-        to.page = new HomePage();
+        let list = db.getList(to.match.groups.listname);
+        to.page = new ListPage(list);
         return true;
     },
 });

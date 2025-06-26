@@ -126,6 +126,12 @@ class Database
     {
         notify("reloadLists");
     }
+
+    getList(listname)
+    {
+        let list = JSON.parse(localStorage.getItem(`${listname}.list`));
+        return list;
+    }
 }
 
 export let db = new Database();
