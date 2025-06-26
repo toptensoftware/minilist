@@ -181,10 +181,13 @@ css`
     display: flex;
     flex-direction: column;
     position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    right: 0;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    width: 100%;
+    height: -webkit-fill-available;
+    -webkit-overflow-scrolling: touch;
 
     header
     {
