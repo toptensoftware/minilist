@@ -80,6 +80,10 @@ export class DragHandler
 
         function finish()
         {
+            if (currentIndex >= 0 && currentIndex + 1 < allItems.length)
+            {
+                allItems[currentIndex + 1].item.classList.remove("after-gap");
+            }
             for (let i=0; i<allItems.length; i++)
             {
                 allItems[i].item.style.transform = ``;
