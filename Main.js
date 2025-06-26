@@ -30,8 +30,6 @@ class Main extends Component
     }
 }
 
-css`
-`;
 
 // Main entry point, create Application and mount
 export function main()

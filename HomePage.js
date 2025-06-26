@@ -165,6 +165,17 @@ css`
     --header-height: 50px;
     --footer-height: 50px;
 }
+
+:root.standalone
+{
+    --footer-height: 90px;
+
+    footer
+    {
+        padding-bottom: 40px;
+    }
+}
+
 #home
 {
     display: flex;

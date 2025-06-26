@@ -39,6 +39,8 @@ body
 </head>
 <body>
     <script type="module">
+        if (window.navigator.standalone)
+            document.documentElement.classList.add("standalone");
         import { main } from "./Main.js";
         main();
     </script>
