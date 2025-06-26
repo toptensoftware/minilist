@@ -3,6 +3,8 @@ export class DragHandler
     // options.elList - the element containing all the items
     // options.selItem - selector for selecting items in the list
     // options.selHandle - selector to match pointer clicks to handle
+    // options.getScrollBounds - callback to provide a { top: y, bottom: y } in client coords or the visible scroll region
+    // options.onMoveItem(from, to) - callback to move an item
     constructor(options)
     {
         this.options = options;
@@ -50,7 +52,7 @@ export class DragHandler
         });
 
         // Get the bounding rectangle of the list itself
-        let listBounds = this.options.elList.getBoundingClientRect();
+        let listBounds = this.options.getScrollBounds();
 
         // Get it's original bounds
         let itemBounds = item.getBoundingClientRect();
@@ -85,14 +87,16 @@ export class DragHandler
         this.options.elList.classList.add("drag-active");
 
         // Capture original click position
-        let originalY = ev.pageY;
+        let originalY = ev.clientY;
+        let moveY = ev.clientY;
         let lastYCoord;
         setCurrentIndex(originalIndex);
 
         function onPointerMove(ev)
         {
             // Update item transform
-            let delta = ev.pageY-originalY;
+            let delta = ev.clientY - originalY;
+            moveY = ev.screenY;
             item.style.transform = `translateY(${delta}px)`;
 
             // Work out Y-coord of item
@@ -118,6 +122,8 @@ export class DragHandler
             {
                 setAutoScroll(0);
             }
+
+            ev.preventDefault();
         }
 
         // Start/stop auto scrolling by specified speed

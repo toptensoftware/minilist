@@ -16,6 +16,10 @@ export class HomePage extends Component
             selItem: ".list-item",
             selHandle: ".move-handle",
             moveItem: (from, to) => db.moveList(from, to),
+            getScrollBounds: () => ({
+                top: this.main.querySelector("header").getBoundingClientRect().bottom,
+                bottom: this.main.querySelector("footer").getBoundingClientRect().top,
+            })
         });
         this.editMode = false;
     }
@@ -178,22 +182,13 @@ css`
 
 #home
 {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    left: 0px;
-    top: 0px;
-    bottom: 0px;
-    right: 0px;
-    width: 100%;
-    height: -webkit-fill-available;
-    -webkit-overflow-scrolling: touch;
-
     header
     {
         width: 100%;
         height: var(--header-height);
-        flex-shrink: 0;
+        position: fixed;
+        left: 0;
+        top: 0;
 
         display: flex;
         justify-content: start;
@@ -241,9 +236,8 @@ css`
 
     .list
     {
-        flex-grow: 1;
-        overflow-y: scroll;
-
+        padding-top: var(--header-height);
+        padding-bottom: var(--footer-height);
 
         &.drag-active
         {
@@ -335,7 +329,9 @@ css`
     {
         width: 100%;
         height: var(--footer-height);
-        flex-shrink: 0;
+        position: fixed;
+        left: 0;
+        bottom: 0;
 
         display: flex;
         justify-content: start;
