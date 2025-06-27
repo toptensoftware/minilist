@@ -3,6 +3,7 @@ import { config } from "./config.js";
 import { db } from "./Database.js";
 import { DragHandler } from "./DragHandler.js";
 import { NewListDialog } from "./NewListDialog.js";
+import { EditListDialog } from "./EditListDialog.js";
 
 export class HomePage extends Component
 {
@@ -38,6 +39,20 @@ export class HomePage extends Component
         this.invalidate();
     }
 
+    onItemClick(ev)
+    {
+        if (!this.editMode)
+            return;
+
+        let elItem = ev.target.closest(".list-item");
+        if (!elItem)
+            return;
+
+        ev.preventDefault();
+
+        let dlg = new EditListDialog(elItem.dataset.name);
+        dlg.showModal();
+    }
 
     static format_counts(list)
     {
@@ -71,7 +86,7 @@ export class HomePage extends Component
                                 type: "a",
                                 href: "#",
                                 on_click: () => window.location.reload(),
-                                text: " v0.0.17",
+                                text: " v0.0.18",
                             }
                         ]
                     },
@@ -95,6 +110,7 @@ export class HomePage extends Component
             {
                 type: "div .list",
                 bind: "list",
+                on_click: "onItemClick",
                 $: {
                     foreach: {
                         items: c => db.lists,

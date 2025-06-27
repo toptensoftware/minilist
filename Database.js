@@ -122,6 +122,37 @@ class Database
         this.onListsChanged();
     }
 
+    renameList(from, to)
+    {
+        // Redundant?
+        if (from == to)
+            return;
+
+        // Check if a list with this name already exists
+        if (this.#lists.some(x => x.name == to))
+            throw new Error("A list with this name already exists");
+
+        // Find the list in the index
+        let listIndex = this.findListIndex(from);
+        if (listIndex < 0)
+            return;
+
+        // Load the list and update its internal name
+        let list = this.getList(from);
+        list.name = to;
+        this.saveList(list);
+
+        // Remove the old list from storage
+        localStorage.removeItem(`${from}.list`);
+
+        // Update the index
+        this.#lists[listIndex].name = to;
+
+        // Save and fire
+        this.saveOrder();
+        this.onListsChanged();
+    }
+
     onListsChanged()
     {
         notify("reloadLists");
