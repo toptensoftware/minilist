@@ -1,0 +1,7 @@
+{
+  "name": "MiniList",
+  "short_name": "MiniList",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/"
+}

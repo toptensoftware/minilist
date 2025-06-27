@@ -148,7 +148,7 @@ class Database
         list.items.push(item);
 
         // Update list index
-        this.#lists[listIndex].count = list.items.count;
+        this.#lists[listIndex].count = list.items.length;
         this.#lists[listIndex].checked += item.checked ? 1 : 0;
         this.onListsChanged();
 

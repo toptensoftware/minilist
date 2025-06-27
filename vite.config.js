@@ -13,6 +13,7 @@ export default defineConfig({
       targets: [
           { src: 'public/**/*', dest: './public/' },
           { src: 'cache.manifest', dest: './' },
+          { src: 'manifest.json', dest: './' },
         ],
     }),
   ],
