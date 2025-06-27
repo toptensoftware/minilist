@@ -61,11 +61,18 @@ export class HomePage extends Component
     {
         if (list.checked)
         {
-            return `${list.count - list.checked} of ${list.count} remaining`;
+            if (list.checked == list.count)
+            {
+                return `${list.count} item${list.count == 1 ? "" : "s"} done`;
+            }
+            else
+            {
+                return `${list.count - list.checked} of ${list.count} item${list.count == 1 ? "" : "s"} remaining`;
+            }
         }
         else
         {
-            return `${list.count} items`;
+            return `${list.count} item${list.count == 1 ? "" : "s"}`;
         }
     }
 
