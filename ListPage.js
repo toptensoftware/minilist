@@ -47,6 +47,11 @@ export class ListPage extends Component
         db.deleteItemFromList(this.#list, item);
     }
 
+    onItemClick(item, ev)
+    {
+        db.toggleItemChecked(this.#list, item);
+    }
+
     get pageTitle() { return this.#list.name; }
     get list() { return this.#list; }
 
@@ -80,7 +85,9 @@ export class ListPage extends Component
                     },
                     type: "div",
                     class: "list-item",
+                    class_checked: i => i.checked,
                     "data-name": i => i.name,
+                    on_click: (i, ev, ctx) => ctx.outer.model.onItemClick(i, ev),
                     $: [
                         {
                             type: "div",
@@ -92,8 +99,14 @@ export class ListPage extends Component
                             on_click: (i, ev, ctx) => ctx.outer.model.onDeleteItem(i, ev),
                         },
                         {
-                            type: "div",
-                            class: "body",
+                            type: "div .checkmark",
+                            $: {
+                                type: "img",
+                                src: "/public/Checkmark.svg",
+                            },
+                        },
+                        {
+                            type: "div .body",
                             $: i => i.name,
                         },
                         {
@@ -208,8 +221,8 @@ css`
         {
             display: flex;
             flex-direction: row;
-            padding: 5px;
             user-select: none; 
+            gap: 5px;
 
             &.dragging
             {
@@ -252,22 +265,41 @@ css`
                     height: 24px;
                 }
             }
+            
+            .checkmark
+            {
+                width: 40px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                img
+                {
+                    width: 24px;
+                    height: 24px;
+                    display: none;
+                }
+            }
+
+            &.checked
+            {
+                .checkmark
+                {
+                    img
+                    {
+                        display: flex;
+                    }
+                }
+                .body
+                {
+                    opacity: 50%;
+                }
+            }
 
             .body
             {
                 color: var(--body-text-color);
                 flex-grow: 1;
-                h3 
-                { 
-                    margin: 0; 
-                    padding: 0;
-                    font-size: 1rem;
-                    color: var(--accent-color);
-                }
-                
-                .counts
-                {
-                }
+                border-left: 1px solid var(--account-color);
             }
 
             border-bottom: 1px solid var(--gridline-color);

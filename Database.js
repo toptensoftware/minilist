@@ -226,6 +226,24 @@ class Database
         this.saveList(list);
     }
 
+    toggleItemChecked(list, item)
+    {
+        // Find the index entry for this list
+        let listIndex = this.findListIndex(list.name);
+        if (listIndex < 0)
+            return;
+
+        // Toggle check
+        item.checked = !item.checked;
+
+        // Update index
+        this.#lists[listIndex].checked += item.checked ? 1 : -1;
+        this.onListsChanged();
+
+        // Save the list
+        this.saveList(list);
+    }
+
     saveList(list)
     {
         // Save list
