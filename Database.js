@@ -250,6 +250,15 @@ class Database
         this.saveList(list);
     }
 
+    setListViewMode(list, mode)
+    {
+        if (list.mode == mode)
+            return;
+
+        list.mode = mode;
+        this.saveList(list);
+    }
+
     saveList(list)
     {
         // Save list

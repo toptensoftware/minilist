@@ -190,6 +190,9 @@ export class DragHandler
             // Move the item
             if (currentIndex != originalIndex)
                 self.options.moveItem(originalIndex, currentIndex);
+
+            ev.preventDefault();
+            ev.stopPropagation();
         }
 
         // Set the current insert position

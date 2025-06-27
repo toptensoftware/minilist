@@ -16,7 +16,7 @@ export class ListPage extends Component
             elList: this.elList,
             selItem: ".list-item",
             selHandle: ".move-handle",
-            moveItem: (from, to) => db.moveItemInList(this.#list, from, to),
+            moveItem: (from, to) => db.moveItemInList(this.#list, this.mapViewIndex(from), this.mapViewIndex(to)),
             getScrollBounds: () => ({
                 top: this.elMain.querySelector("header").getBoundingClientRect().bottom,
                 bottom: this.elMain.querySelector("footer").getBoundingClientRect().top,
@@ -28,6 +28,21 @@ export class ListPage extends Component
 
     #list;
     #dragHandler;
+
+    getItemsFiltered()
+    {
+        switch (this.#list.mode ?? "all")
+        {
+            case "all": 
+                return this.#list.items;
+
+            case "todo":
+                return this.#list.items.filter(x => !x.checked);
+
+            case "done":
+                return this.#list.items.filter(x => x.checked);
+        }
+    }
 
     onEdit()
     {
@@ -57,6 +72,9 @@ export class ListPage extends Component
         }
         else
         {
+            if (!ev.target.closest(".body"))
+                return;
+
             let elItem = ev.target.closest(".list-item");
             if (!elItem)
                 return;
@@ -68,7 +86,31 @@ export class ListPage extends Component
         }
     }
 
+    get viewMode()
+    {
+        return this.#list.mode;
+    }
     
+    set viewMode(mode)
+    {
+        db.setListViewMode(this.#list, mode);
+    }
+
+    mapViewIndex(index)
+    {
+        switch (this.viewMode)
+        {
+            case "all":
+                return index;
+
+            case "todo":
+            case "done":
+                let filtered = this.getItemsFiltered();
+                let item = filtered[index];
+                return this.#list.items.indexOf(item);                
+        }
+
+    }
     
 
     get pageTitle() { return this.#list.name; }
@@ -99,7 +141,7 @@ export class ListPage extends Component
                 bind: "elList",
                 $: {
                     foreach: {
-                        items: c => c.list.items,
+                        items: c => c.getItemsFiltered(),
                         itemKey: i => i.id,
                     },
                     type: "div",
@@ -156,9 +198,12 @@ export class ListPage extends Component
                     {
                         type: "div .buttons-center .control-group",
                         $: [
-                            { type: "input .button #all type=radio checked" }, { type: "label", for:".all", $: "All" },
-                            { type: "input .button #todo type=radio" }, { type: "label", for:".todo", $: "To Do" },
-                            { type: "input .button #done type=radio" }, { type: "label", for:".done", $: "Done" },
+                            { type: "input .button #all name=mode type=radio value=all", input: "viewMode" }, 
+                            { type: "label", for:"all", $: "All" },
+                            { type: "input .button #todo name=mode type=radio value=todo", input: "viewMode" }, 
+                            { type: "label", for:"todo", $: "To Do" },
+                            { type: "input .button #done name=mode type=radio value=done", input: "viewMode" }, 
+                            { type: "label", for:"done", $: "Done" },
                         ]
                     },
                     {
@@ -299,6 +344,7 @@ css`
             {
                 width: 35px;
                 display: flex;
+                flex-shrink: 0;
                 justify-content: center;
                 align-items: center;
                 img

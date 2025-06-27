@@ -44,6 +44,9 @@ export class HomePage extends Component
         if (!this.editMode)
             return;
 
+        if (!ev.target.closest(".body"))
+            return;
+
         let elItem = ev.target.closest(".list-item");
         if (!elItem)
             return;
