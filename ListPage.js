@@ -86,7 +86,7 @@ export class ListPage extends Component
                     {
                         type: "a .back",
                         href: "/",
-                        text: "< Back"
+                        text: html("〈 &nbsp;&nbsp;"),
                     },
                     {
                         type: "div .title",
@@ -154,12 +154,20 @@ export class ListPage extends Component
                         ]
                     },
                     {
+                        type: "div .buttons-center .control-group",
+                        $: [
+                            { type: "input .button #all type=radio checked" }, { type: "label", for:".all", $: "All" },
+                            { type: "input .button #todo type=radio" }, { type: "label", for:".todo", $: "To Do" },
+                            { type: "input .button #done type=radio" }, { type: "label", for:".done", $: "Done" },
+                        ]
+                    },
+                    {
                         type: "div .buttons-right",
                         $: [
                             {
                                 type: "button",
-                                $: "New Item",
                                 on_click: "onNewItem",
+                                text: "＋",
                             },
                         ]
                     }
@@ -358,21 +366,36 @@ css`
         padding-right: 10px;
         background-color: rgb(from var(--back-color) r g b / 75%);
         z-index: 1;
+        gap: 10px;
 
         .buttons-left
         {
-            flex-grow: 1;
             font-size: 12pt;
             display: flex;
-            gap: 10px;
             align-items: center;
+            width: 80px;
+        }
+        .buttons-center
+        {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            label
+            {
+                font-size: 0.9rem;
+                display: inline-block;
+                width: 70px;
+                text-align: center;
+            }
         }
         .buttons-right
         {
             font-size: 12pt;
             display: flex;
             gap: 10px;
+            justify-content: right;
             align-items: center;
+            width: 80px;
         }
     }
 }

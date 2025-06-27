@@ -86,7 +86,7 @@ export class HomePage extends Component
                                 type: "a",
                                 href: "#",
                                 on_click: () => window.location.reload(),
-                                text: " v0.0.20",
+                                text: " v0.0.21",
                             }
                         ]
                     },
@@ -175,7 +175,7 @@ export class HomePage extends Component
                         $: [
                             {
                                 type: "button",
-                                $: "New List",
+                                $: "＋",
                                 on_click: "onNewList",
                             },
                         ]
