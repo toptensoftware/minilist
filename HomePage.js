@@ -150,7 +150,7 @@ export class HomePage extends Component
                                 },
                                 {
                                     type: "div",
-                                    class: "counts",
+                                    class: "counts muted",
                                     $: i => HomePage.format_counts(i),
                                 }  
                             ]
@@ -339,6 +339,7 @@ css`
                 
                 .counts
                 {
+                    text-align:right;
                 }
             }
 
