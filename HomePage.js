@@ -67,7 +67,7 @@ export class HomePage extends Component
                                 type: "img", 
                                 src: "/public/logo.svg",
                             },
-                            config.appName + " v0.0.13",
+                            config.appName + " v0.0.14",
                         ]
                     },
                     {
@@ -271,25 +271,32 @@ css`
             .del-button
             {
                 display: none;
-                padding: 9px 12px 0 12px;
+                justify-content: center;
+                align-items: center;
+                padding-left: 5px;
+                padding-right: 7px;
                 img
                 {
-                    width: 25px;
-                    height: 25px;
+                    width: 24px;
+                    height: 24px;
                 }
             }
 
             .move-handle
             {
                 display: none;
-                padding: 9px 12px 0 12px;
+                justify-content: center;
+                align-items: center;
                 touch-action: none;
+                padding-left: 7px;
+                padding-right: 7px;
                 img
                 {
-                    width: 45px;
-                    height: 45px;
+                    width: 24px;
+                    height: 24px;
                 }
             }
+
 
             .body
             {
@@ -321,7 +328,7 @@ css`
             {
                 .del-button, .move-handle
                 {
-                    display: block;
+                    display: flex;
                 }
             }
         }

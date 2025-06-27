@@ -171,7 +171,6 @@ css`
         padding-right: 10px;
         background-color: rgb(from var(--back-color) r g b / 75%);
         z-index: 1;
-        position: relative;
 
         .title 
         {
@@ -227,23 +226,29 @@ css`
             .del-button
             {
                 display: none;
-                padding: 9px 12px 0 12px;
+                justify-content: center;
+                align-items: center;
+                padding-left: 5px;
+                padding-right: 7px;
                 img
                 {
-                    width: 25px;
-                    height: 25px;
+                    width: 24px;
+                    height: 24px;
                 }
             }
 
             .move-handle
             {
                 display: none;
-                padding: 9px 12px 0 12px;
+                justify-content: center;
+                align-items: center;
                 touch-action: none;
+                padding-left: 7px;
+                padding-right: 7px;
                 img
                 {
-                    width: 45px;
-                    height: 45px;
+                    width: 24px;
+                    height: 24px;
                 }
             }
 
@@ -277,7 +282,7 @@ css`
             {
                 .del-button, .move-handle
                 {
-                    display: block;
+                    display: flex;
                 }
             }
         }
