@@ -8,20 +8,25 @@ export class AddItemDialog extends Dialog
     {
         super();
         this.callback = callback;
+        this.itemName = "";
+        this.separator = false;
     }
 
     addItem()
     {
-        let text = this.itemname.value.trim();
+        let text = this.itemName.trim();
         if (text != "")
         {
             this.callback({ 
                 name: text,
+                separator: this.separator,
                 count: 1,
                 checked: false,
             });
         }
-        this.itemname.value = "";
+        this.itemName = "";
+        this.separator = false;
+        this.invalidate();
     }
 
     onSave(ev)
@@ -46,9 +51,22 @@ export class AddItemDialog extends Dialog
             {
                 type: "input type=text",
                 placeholder: "Enter item",
-                bind: "itemname",
+                input: "itemName",
                 on_keypress: "onKeyPress",
 
+            },
+            {
+                type: "div .options",
+                $: {
+                    type: "label",
+                    $: [
+                        { 
+                            type: "input type=checkbox .switch",
+                            input: "separator",
+                        },
+                        "Separator"
+                    ],
+                }
             },
             {
                 type: "div .tip",
@@ -94,6 +112,12 @@ css`
     {
         display: inline-block;
         width: 120px;
+    }
+
+    .options
+    {
+        text-align: center;
+        padding-top: 20px;
     }
 }
 `;

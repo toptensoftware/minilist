@@ -9,13 +9,20 @@ export class EditItemDialog extends Dialog
         super();
         this.list = list;
         this.item = item;
+
+        this.itemName = item.name;
+        this.separator = item.separator;
+
         this.create();
-        this.elItemName.selectionStart = this.elItemName.selectionEnd = this.elItemName.value.length;
+        //this.elItemName.selectionStart = this.elItemName.selectionEnd = this.elItemName.value.length;
     }
 
     onSave(ev)
     {
-        db.renameItem(this.list, this.item, this.elItemName.value);
+        db.updateItem(this.list, this.item, {
+            name: this.itemName, 
+            separator: this.separator
+        });
     }
 
     // This template will be "re-templated" by the base Dialog class
@@ -23,12 +30,27 @@ export class EditItemDialog extends Dialog
     static template = {
         title: "Edit Item",
         id: "edit-item-dialog",
-        content: {
-            type: "input type=text",
-            placeholder: "Enter item",
-            bind: "elItemName",
-            value: c => c.item.name,
-        },
+        content: [
+            {
+                type: "input type=text",
+                placeholder: "Enter item",
+                input: "itemName",
+                value: c => c.item.name,
+            },
+            {
+                type: "div .options",
+                $: {
+                    type: "label",
+                    $: [
+                        { 
+                            type: "input type=checkbox .switch",
+                            input: "separator",
+                        },
+                        "Separator"
+                    ],
+                }
+            },
+        ],
         footer: [
             {
                 type: "button",
@@ -62,6 +84,11 @@ css`
     {
         display: inline-block;
         width: 120px;
+    }
+    .options
+    {
+        text-align: center;
+        padding-top: 20px;
     }
 }
 `;

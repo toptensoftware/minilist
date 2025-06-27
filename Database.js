@@ -45,7 +45,7 @@ class Database
     saveListToIndex(list, loading)
     {
         // Get counts
-        let count = list.items.length;
+        let count = list.items.filter(x => !x.separator).length;
         let checked = list.items.filter(x => x.checked).length;
 
         // Find existing list entry, or create a new one
@@ -184,7 +184,7 @@ class Database
         list.items.push(item);
 
         // Update list index
-        this.#lists[listIndex].count = list.items.length;
+        this.#lists[listIndex].count += item.separator ? 0 : 1;
         this.#lists[listIndex].checked += item.checked ? 1 : 0;
         this.onListsChanged();
 
@@ -208,7 +208,7 @@ class Database
         list.items.splice(index, 1);
 
         // Update list index
-        this.#lists[listIndex].count = list.items.length;
+        this.#lists[listIndex].count -= item.separator ? 0 : 1;
         this.#lists[listIndex].checked -= item.checked ? 1 : 0;
         this.onListsChanged();
 
@@ -228,6 +228,10 @@ class Database
 
     toggleItemChecked(list, item)
     {
+        // Can't toggle separators
+        if (item.separator)
+            return;
+
         // Find the index entry for this list
         let listIndex = this.findListIndex(list.name);
         if (listIndex < 0)
@@ -244,9 +248,36 @@ class Database
         this.saveList(list);
     }
 
-    renameItem(list, item, newName)
+    updateItem(list, item, newItem)
     {
-        item.name = newName;
+        // Switching between separator and non-separator
+        if (item.separator != newItem.separator)
+        {
+            // Get index entry
+            let listIndex = this.findListIndex(list.name);
+            if (listIndex < 0)
+                return;
+
+            // Handle checked item being converted to separator
+            if (newItem.separator && item.checked)
+            {
+                this.#lists[listIndex].checked--;
+                item.checked = false;
+            }
+
+            // Update count of items
+            this.#lists[listIndex].count += item.separator ? 1 : -1;
+            this.onListsChanged();
+
+            // Update item separator flag
+            item.separator = newItem.separator;
+        }
+
+
+        // Update item name
+        item.name = newItem.name;
+        
+        // Save list
         this.saveList(list);
     }
 

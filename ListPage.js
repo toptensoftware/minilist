@@ -37,10 +37,26 @@ export class ListPage extends Component
                 return this.#list.items;
 
             case "todo":
-                return this.#list.items.filter(x => !x.checked);
+                return removeRedundantSeparators(this.#list.items.filter(x => x.separator || !x.checked));
 
             case "done":
-                return this.#list.items.filter(x => x.checked);
+                return removeRedundantSeparators(this.#list.items.filter(x => x.separator || x.checked));
+        }
+
+        function removeRedundantSeparators(arr)
+        {
+            for (let i=0; i<arr.length; i++)
+            {
+                if (arr[i].separator)
+                {
+                    if (i + 1 == arr.length || arr[i+1].separator)
+                    {
+                        arr.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+            return arr;
         }
     }
 
@@ -147,7 +163,7 @@ export class ListPage extends Component
                     type: "div",
                     class: "list-item",
                     class_checked: i => i.checked,
-                    "data-name": i => i.name,
+                    class_separator: i => i.separator,
                     on_click: (i, ev, ctx) => ctx.outer.model.onItemClick(i, ev),
                     $: [
                         {
@@ -311,6 +327,20 @@ css`
                 border-top: 1px solid var(--gridline-color);
             }
 
+            &.separator
+            {
+                background-color: rgb(from var(--accent-color) r g b / 5%);
+                .checkmark
+                {
+                    display: none;
+                }
+                .body
+                {
+                    color: var(--accent-color);
+                    padding-left: 2px;
+                }
+            }
+
             .del-button
             {
                 display: none;
@@ -396,6 +426,19 @@ css`
         }
     }
 
+    &:not(.edit-mode)
+    {
+        .list
+        {
+            .list-item.separator
+            {
+                padding: 0;
+                font-size: 0.8rem;
+            }
+        }
+    }
+
+
     footer
     {
         width: 100%;
@@ -450,7 +493,7 @@ css`
 router.register({
     pattern: "/list/:listname",
     match: (to) => {
-        let list = db.getList(to.match.groups.listname);
+        let list = db.getList(decodeURIComponent(to.match.groups.listname));
         to.page = new ListPage(list);
         return true;
     },
