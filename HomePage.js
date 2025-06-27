@@ -340,6 +340,7 @@ css`
                 .counts
                 {
                     text-align:right;
+                    padding-right: 10px;
                 }
             }
 
