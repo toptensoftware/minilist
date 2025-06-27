@@ -3,6 +3,7 @@ import { config } from "./config.js";
 import { db } from "./Database.js";
 import { DragHandler } from "./DragHandler.js";
 import { AddItemDialog } from "./AddItemDialog.js";
+import { EditItemDialog } from "./EditItemDialog.js";
 
 export class ListPage extends Component
 {
@@ -49,8 +50,26 @@ export class ListPage extends Component
 
     onItemClick(item, ev)
     {
-        db.toggleItemChecked(this.#list, item);
+        if (!this.editMode)
+        {
+            db.toggleItemChecked(this.#list, item);
+            return;
+        }
+        else
+        {
+            let elItem = ev.target.closest(".list-item");
+            if (!elItem)
+                return;
+
+            ev.preventDefault();
+
+            let dlg = new EditItemDialog(this.#list, item);
+            dlg.showModal();
+        }
     }
+
+    
+    
 
     get pageTitle() { return this.#list.name; }
     get list() { return this.#list; }
@@ -223,6 +242,8 @@ css`
             flex-direction: row;
             user-select: none; 
             gap: 5px;
+            padding-top: 5px;
+            padding-bottom: 5px;
 
             &.dragging
             {
@@ -268,7 +289,7 @@ css`
             
             .checkmark
             {
-                width: 40px;
+                width: 35px;
                 display: flex;
                 justify-content: center;
                 align-items: center;

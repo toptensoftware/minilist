@@ -244,6 +244,12 @@ class Database
         this.saveList(list);
     }
 
+    renameItem(list, item, newName)
+    {
+        item.name = newName;
+        this.saveList(list);
+    }
+
     saveList(list)
     {
         // Save list
