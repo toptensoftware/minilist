@@ -34,6 +34,9 @@
         }
     </style>
 <style>
+html {
+  overscroll-behavior: none;
+}
 body
 {
     padding: 0;
@@ -44,7 +47,6 @@ body
 <body>
     <script type="module">
         window.applicationCache?.addEventListener('updateready', () => window.location.reload(), false);
-        document.body.addEventListener('touchmove', (ev) => ev.preventDefault(), { passive: false });
         if (window.navigator.standalone)
             document.documentElement.classList.add("standalone");
         import { main } from "./Main.js";
