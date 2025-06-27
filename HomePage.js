@@ -60,14 +60,19 @@ export class HomePage extends Component
                 type: "header",
                 $: [
                     {
-                        type: "a .title",
-                        href: "/",
+                        type: "span .title",
                         $: [
                             { 
                                 type: "img", 
                                 src: "/public/logo.svg",
                             },
-                            config.appName + " v0.0.14",
+                            config.appName + " ",
+                            {
+                                type: "a",
+                                href: "#",
+                                on_click: () => window.location.reload(),
+                                text: " v0.0.15",
+                            }
                         ]
                     },
                     {
@@ -204,14 +209,9 @@ css`
         {
             flex-grow: 1;
             display: flex;
+            gap: 3px;
             align-items: center;
             color: var(--body-fore-color);
-            transition: opacity 0.2s;
-
-            &:hover
-            {
-                opacity: 75%;
-            }
 
             img
             {
