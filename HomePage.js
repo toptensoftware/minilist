@@ -98,6 +98,7 @@ export class HomePage extends Component
                 $: {
                     foreach: {
                         items: c => db.lists,
+                        itemKey: i => i.name,
                     },
                     type: "div",
                     class: "list-item",

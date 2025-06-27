@@ -62,6 +62,10 @@ dialog.dialog
     {
         padding: 10px;
     }
+    footer
+    {
+        justify-content: center;
+    }
 }
 `;
 

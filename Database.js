@@ -130,6 +130,14 @@ class Database
     getList(listname)
     {
         let list = JSON.parse(localStorage.getItem(`${listname}.list`));
+
+        // Check all items have an id
+        for (let i=0; i<list.items.length; i++)
+        {
+            if (!list.items[i].id)
+                list.items[i].id = allocateItemId(list);
+        }
+
         return list;
     }
 
@@ -141,10 +149,7 @@ class Database
             return;
 
         // Work out next id
-        let id = list.length;
-        while (list.items.some(x => x. id == id))
-            id++;
-        item.id = id;
+        item.id = allocateItemId(list);
         list.items.push(item);
 
         // Update list index
@@ -201,3 +206,14 @@ class Database
 }
 
 export let db = new Database();
+
+
+function allocateItemId(list)
+{
+    // Work out next id
+    let id = list.items.length;
+    while (list.items.some(x => x.id == id))
+        id++;
+    return id;
+}
+

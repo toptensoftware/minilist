@@ -76,6 +76,7 @@ export class ListPage extends Component
                 $: {
                     foreach: {
                         items: c => c.list.items,
+                        itemKey: i => i.id,
                     },
                     type: "div",
                     class: "list-item",
