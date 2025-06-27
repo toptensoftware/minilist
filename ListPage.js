@@ -88,7 +88,7 @@ export class ListPage extends Component
 
     get viewMode()
     {
-        return this.#list.mode;
+        return this.#list.mode ?? "all";
     }
     
     set viewMode(mode)
