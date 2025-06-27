@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@codeonlyjs/core": "codeonlyjs/core#semver:^0.1",
+    "@codeonlyjs/core": "github:codeonlyjs/core",
     "@codeonlyjs/coserv": "github:codeonlyjs/coserv"
   },
   "devDependencies": {
@@ -21,4 +21,3 @@
     "vite-plugin-static-copy": "^2.0.0"
   }
 }
-

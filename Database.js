@@ -26,7 +26,7 @@ class Database
             list.name = key.substring(0, key.length - 5);
 
             // Update the index
-            this.saveList(list, true);
+            this.saveListToIndex(list, true);
         }
     }
 
@@ -42,7 +42,7 @@ class Database
         return -1;
     }
 
-    saveList(list, loading)
+    saveListToIndex(list, loading)
     {
         // Get counts
         let count = list.items.length;
@@ -78,8 +78,8 @@ class Database
 
     saveOrder()
     {
-            // Save the order
-            localStorage.setItem(`order.json`, JSON.stringify(this.#lists.map(x => x.name)));
+        // Save the order
+        localStorage.setItem(`order.json`, JSON.stringify(this.#lists.map(x => x.name)));
     }
 
     get lists()
@@ -94,7 +94,7 @@ class Database
             return;
 
         // Save new list
-        this.saveList({
+        this.saveListToIndex({
             name: listname,
             items: [],
         });
@@ -131,6 +131,72 @@ class Database
     {
         let list = JSON.parse(localStorage.getItem(`${listname}.list`));
         return list;
+    }
+
+    addItemToList(list, item)
+    {
+        // Find the index entry for this list
+        let listIndex = this.findListIndex(list.name);
+        if (listIndex < 0)
+            return;
+
+        // Work out next id
+        let id = list.length;
+        while (list.items.some(x => x. id == id))
+            id++;
+        item.id = id;
+        list.items.push(item);
+
+        // Update list index
+        this.#lists[listIndex].count = list.items.count;
+        this.#lists[listIndex].checked += item.checked ? 1 : 0;
+        this.onListsChanged();
+
+        // Save and notify
+        this.saveList(list);
+    }
+
+    deleteItemFromList(list, item)
+    {
+        // Find the index entry for this list
+        let listIndex = this.findListIndex(list.name);
+        if (listIndex < 0)
+            return;
+
+        // Find list item
+        let index = list.items.indexOf(item);
+        if (index < 0)
+            return;
+
+        // Remove from list
+        list.items.splice(index, 1);
+
+        // Update list index
+        this.#lists[listIndex].count = list.items.length;
+        this.#lists[listIndex].checked -= item.checked ? 1 : 0;
+        this.onListsChanged();
+
+        // Save and notify
+        this.saveList(list);
+    }
+
+    moveItemInList(list, fromIndex, toIndex)
+    {
+        let item = list.items[fromIndex];
+        list.items.splice(fromIndex, 1);
+        list.items.splice(toIndex, 0, item);
+
+        // Save and notify
+        this.saveList(list);
+    }
+
+    saveList(list)
+    {
+        // Save list
+        localStorage.setItem(`${list.name}.list`, JSON.stringify(list));
+
+        // Notify
+        notify(list);
     }
 }
 

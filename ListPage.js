@@ -2,7 +2,7 @@ import { Component, css, router, html, notify } from "@codeonlyjs/core";
 import { config } from "./config.js";
 import { db } from "./Database.js";
 import { DragHandler } from "./DragHandler.js";
-import { EditItemDialog } from "./EditItemDialog.js";
+import { AddItemDialog } from "./AddItemDialog.js";
 
 export class ListPage extends Component
 {
@@ -15,13 +15,14 @@ export class ListPage extends Component
             elList: this.elList,
             selItem: ".list-item",
             selHandle: ".move-handle",
-            moveItem: (from, to) => db.moveList(from, to),
+            moveItem: (from, to) => db.moveItemInList(this.#list, from, to),
             getScrollBounds: () => ({
                 top: this.elMain.querySelector("header").getBoundingClientRect().bottom,
                 bottom: this.elMain.querySelector("footer").getBoundingClientRect().top,
             })
         });
         this.editMode = false;
+        this.listen(notify, this.#list);
     }
 
     #list;
@@ -35,8 +36,15 @@ export class ListPage extends Component
 
     onNewItem()
     {
-        let dlg = new EditItemDialog(null);
+        let dlg = new AddItemDialog((item) => {
+            db.addItemToList(this.#list, item);
+        });
         dlg.showModal();
+    }
+
+    onDeleteItem(item, ev)
+    {
+        db.deleteItemFromList(this.#list, item);
     }
 
     get pageTitle() { return this.#list.name; }
@@ -80,7 +88,7 @@ export class ListPage extends Component
                                 type: "img",
                                 src: "/public/DeleteIcon.svg",
                             },
-                            //on_click: i => db.deleteList(i.name),
+                            on_click: (i, ev, ctx) => ctx.outer.model.onDeleteItem(i, ev),
                         },
                         {
                             type: "div",
