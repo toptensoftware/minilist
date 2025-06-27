@@ -382,9 +382,9 @@ css`
             justify-content: center;
             label
             {
-                font-size: 0.9rem;
+                font-size: 0.8rem;
                 display: inline-block;
-                width: 70px;
+                width: 60px;
                 text-align: center;
             }
         }
