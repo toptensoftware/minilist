@@ -173,7 +173,7 @@ export class HomePage extends Component
                         type: "div .buttons-left",
                         $: [
                             {
-                                type: "button",
+                                type: "button .subtle",
                                 $: c => c.editMode ? "Done" : "Edit",
                                 class_accent: c => c.editMode,
                                 on_click: "onEdit",
@@ -184,7 +184,7 @@ export class HomePage extends Component
                         type: "div .buttons-right",
                         $: [
                             {
-                                type: "button",
+                                type: "button .subtle",
                                 $: "＋",
                                 on_click: "onNewList",
                             },

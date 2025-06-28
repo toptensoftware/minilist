@@ -271,6 +271,10 @@ class Database
 
             // Update item separator flag
             item.separator = newItem.separator;
+
+            // Force count to 0 if separator
+            if (item.separator)
+                item.count = 0;
         }
 
 
@@ -278,6 +282,30 @@ class Database
         item.name = newItem.name;
         
         // Save list
+        this.saveList(list);
+    }
+
+    setItemCount(list, item, count)
+    {
+        // Can't turn separators on/off
+        if (item.separator)
+            return;
+
+        // Update the count
+        item.count = count;
+        this.saveList(list);
+    }
+
+    setItemCountAll(list, count)
+    {
+        for (let i=0; i<list.items.length; i++)
+        {
+            // Can't turn separators on/off
+            if (!list.items[i].separator)
+                list.items[i].count = count;
+        }
+
+        // Update the count
         this.saveList(list);
     }
 

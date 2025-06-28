@@ -1,9 +1,10 @@
-import { Component, css, router, html, notify } from "@codeonlyjs/core";
+import { Component, css, router, html, notify, $ } from "@codeonlyjs/core";
 import { config } from "./config.js";
 import { db } from "./Database.js";
 import { DragHandler } from "./DragHandler.js";
 import { AddItemDialog } from "./AddItemDialog.js";
 import { EditItemDialog } from "./EditItemDialog.js";
+import { positionPopover } from "./positionPopover.js";
 
 export class ListPage extends Component
 {
@@ -23,6 +24,7 @@ export class ListPage extends Component
             })
         });
         this.editMode = false;
+        this.pickMode = false;
         this.listen(notify, this.#list);
     }
 
@@ -31,16 +33,26 @@ export class ListPage extends Component
 
     getItemsFiltered()
     {
+        if (this.pickMode)
+            return this.#list.items;
+
+        let pickedItems = this.#list.items.filter(x => x.separator || x.count > 0);
+
         switch (this.#list.mode ?? "all")
         {
             case "all": 
-                return this.#list.items;
+            {
+                if (pickedItems.length < this.#list.items.length)
+                    return removeRedundantSeparators(pickedItems);
+                else
+                    return pickedItems;
+            }
 
             case "todo":
-                return removeRedundantSeparators(this.#list.items.filter(x => x.separator || !x.checked));
+                return removeRedundantSeparators(pickedItems.filter(x => x.separator || !x.checked));
 
             case "done":
-                return removeRedundantSeparators(this.#list.items.filter(x => x.separator || x.checked));
+                return removeRedundantSeparators(pickedItems.filter(x => x.separator || x.checked));
         }
 
         function removeRedundantSeparators(arr)
@@ -79,12 +91,37 @@ export class ListPage extends Component
         db.deleteItemFromList(this.#list, item);
     }
 
+    getItemChecked(item)
+    {
+        if (this.pickMode)
+        {
+            return item.count > 0;
+        }
+        else
+        {
+            return item.checked;
+        }
+    }
+
     onItemClick(item, ev)
     {
         if (!this.editMode)
         {
-            db.toggleItemChecked(this.#list, item);
-            return;
+            if (this.pickMode)
+            {
+                if (ev.target.closest(".checkmark"))
+                {
+                    db.setItemCount(this.#list, item, item.count == 0 ? 1 : 0);
+                }
+                else
+                {
+                    db.setItemCount(this.#list, item, item.count + 1);
+                }
+            }
+            else
+            {
+                db.toggleItemChecked(this.#list, item);
+            }
         }
         else
         {
@@ -100,6 +137,31 @@ export class ListPage extends Component
             let dlg = new EditItemDialog(this.#list, item);
             dlg.showModal();
         }
+    }
+
+    onMenuCommand(ev)
+    {
+        switch (ev.target.id)
+        {
+            case "pick-items":
+                this.pickMode = !this.pickMode;
+                this.invalidate();
+                break;
+
+            case "select-all":
+                db.setItemCountAll(this.#list, 1);
+                break;
+
+            case "clear-all":
+                db.setItemCountAll(this.#list, 0);
+                break;
+        }
+    }
+
+    onFinishPicking()
+    {
+        this.pickMode = false;
+        this.invalidate();
     }
 
     get viewMode()
@@ -137,6 +199,7 @@ export class ListPage extends Component
         type: "main #list",
         bind: "elMain",
         "class_edit-mode": c => c.editMode,
+        "class_pick-mode": c => c.pickMode,
         $: [
             {
                 type: "header",
@@ -150,6 +213,26 @@ export class ListPage extends Component
                         type: "div .title",
                         text: c => c.pageTitle,
                     },
+                    {
+                        type: "button .subtle",
+                        popovertarget: "menu-popover",
+                        $: [
+                            "☰",
+                            {
+                                type: "nav .menu popover='' data-auto-close=1",
+                                id: "menu-popover",
+                                bind: "popover",
+                                on_toggle: (c, ev) => positionPopover(ev),
+                                on_click: "onMenuCommand",
+                                $: [
+                                    $.a(c => c.pickMode ? "Finish Picking" : "Pick Items").id("pick-items"),
+                                    $.hr().display(c => c.pickMode),
+                                    $.a("Clear All").id("clear-all").display(c => c.pickMode),
+                                    $.a("Select All").id("select-all").display(c => c.pickMode),
+                                ]
+                            }
+                        ]
+                    }
                 ]
             },
             {
@@ -162,7 +245,7 @@ export class ListPage extends Component
                     },
                     type: "div",
                     class: "list-item",
-                    class_checked: i => i.checked,
+                    class_checked: (i, ctx) => ctx.outer.model.getItemChecked(i),
                     class_separator: i => i.separator,
                     on_click: (i, ev, ctx) => ctx.outer.model.onItemClick(i, ev),
                     $: [
@@ -184,7 +267,7 @@ export class ListPage extends Component
                         },
                         {
                             type: "div .body",
-                            $: i => i.name,
+                            $: i => formatItemCount(i),
                         },
                         {
                             type: "div",
@@ -204,7 +287,7 @@ export class ListPage extends Component
                         type: "div .buttons-left",
                         $: [
                             {
-                                type: "button",
+                                type: "button .subtle",
                                 $: c => c.editMode ? "Done" : "Edit",
                                 class_accent: c => c.editMode,
                                 on_click: "onEdit",
@@ -213,6 +296,7 @@ export class ListPage extends Component
                     },
                     {
                         type: "div .buttons-center .control-group",
+                        if: c => !c.pickMode,
                         $: [
                             { type: "input .button #all name=mode type=radio value=all", input: "viewMode" }, 
                             { type: "label", for:"all", $: "All" },
@@ -223,10 +307,19 @@ export class ListPage extends Component
                         ]
                     },
                     {
+                        type: "div .buttons-center",
+                        else: true,
+                        $: {
+                            type: "button .accent",
+                            text: "Finish Picking",
+                            on_click: "onFinishPicking",
+                        }
+                    },
+                    {
                         type: "div .buttons-right",
                         $: [
                             {
-                                type: "button",
+                                type: "button .subtle",
                                 on_click: "onNewItem",
                                 text: "＋",
                             },
@@ -236,6 +329,13 @@ export class ListPage extends Component
             }
         ]
     }
+}
+
+function formatItemCount(item)
+{
+    if (!item.separator && item.count > 1)
+        return `${item.count}x ${item.name}`;
+    return item.name;
 }
 
 css`
@@ -272,7 +372,6 @@ css`
         padding-left: 10px;
         padding-right: 10px;
         background-color: rgb(from var(--back-color) r g b / 75%);
-        z-index: 1;
 
         .title 
         {
@@ -284,12 +383,34 @@ css`
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: -1;
         }
         .back
         {
             z-index: 1;
             color: var(--body-text-color);
+            flex-grow: 1;
         }
+
+        .menu
+        {
+            border: 1px solid var(--accent-color);
+            border-radius: 10px;
+            padding: 10px 0;
+            text-align: left;
+            a
+            {
+                display: block;
+                padding: 10px 20px;
+                &:hover
+                {
+                    background-color: rgb(from var(--fore-color) r g b / 10%);
+                    color: unset;
+                }
+            }
+            
+        }
+
     }
 
     .list
@@ -421,6 +542,20 @@ css`
                 .del-button, .move-handle
                 {
                     display: flex;
+                }
+            }
+        }
+    }
+
+    &.pick-mode
+    {
+        .list
+        {
+            .list-item
+            {
+                .body
+                {
+                    opacity: 100%;
                 }
             }
         }
