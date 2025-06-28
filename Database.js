@@ -5,7 +5,7 @@ class Database
     constructor()
     {
         // Create empty lists in the correct order
-        this.#lists = JSON.parse(localStorage.getItem("order.json") ?? "[]").map(x => ( { 
+        this.#index = JSON.parse(localStorage.getItem("order.json") ?? "[]").map(x => ( { 
             name: x,
             count: 0, 
             checked: 0
@@ -25,85 +25,66 @@ class Database
             // Make sure the name matches the key
             list.name = key.substring(0, key.length - 5);
 
-            // Update the index
-            this.saveListToIndex(list, true);
+            // Update index, save and notify
+            this.updateIndex(list);
         }
     }
 
-    #lists;
+    #index;
 
     findListIndex(listname)
     {
-        for (let i=0; i<this.#lists.length; i++)
+        for (let i=0; i<this.#index.length; i++)
         {
-            if (this.#lists[i].name == listname)
+            if (this.#index[i].name == listname)
                 return i;
         }
         return -1;
     }
 
-    saveListToIndex(list, loading)
-    {
-        // Get counts
-        let count = list.items.filter(x => !x.separator).length;
-        let checked = list.items.filter(x => x.checked).length;
-
-        // Find existing list entry, or create a new one
-        let index = this.findListIndex(list.name);
-        if (index < 0)
-        {
-            this.#lists.push({
-                name: list.name,
-                count,
-                checked,
-            })
-        }
-        else
-        {
-            this.#lists[index].count = count;
-            this.#lists[index].checked = checked;
-        }
-
-        if (!loading)
-        {
-            // Save the list
-            localStorage.setItem(`${list.name}.list`, JSON.stringify(list));
-
-            this.saveOrder();
-            
-            // Fire event
-            this.onListsChanged();
-        }
-    }
 
     saveOrder()
     {
         // Save the order
-        localStorage.setItem(`order.json`, JSON.stringify(this.#lists.map(x => x.name)));
+        localStorage.setItem(`order.json`, JSON.stringify(this.#index.map(x => x.name)));
     }
 
     get lists()
     {
-        return this.#lists;
+        return this.#index;
     }
 
     createList(listname)
     {
         // Check doesn't already exist
-        if (this.#lists.some(x => x.name == listname))
+        if (this.#index.some(x => x.name == listname))
             return;
 
-        // Save new list
-        this.saveListToIndex({
+        // Create list index entry
+        let indexEntry = {
+            name: listname,
+            count: 0,
+            checked: 0,
+        };
+        this.#index.push(indexEntry);
+        this.saveOrder();
+
+        // Create the list itself
+        let list = {
             name: listname,
             items: [],
-        });
+            viewMode: "all",
+        }
+        this.saveList(list);
+
+        // Notify
+        this.onListsChanged();
     }
 
     deleteList(listname)
     {
         // Remove from index
-        this.#lists = this.#lists.filter(x => x.name != listname);
+        this.#index = this.#index.filter(x => x.name != listname);
         this.saveOrder();
 
         // Remove from storage
@@ -115,9 +96,9 @@ class Database
 
     moveList(fromIndex, toIndex)
     {
-        let list = this.#lists[fromIndex];
-        this.#lists.splice(fromIndex, 1);
-        this.#lists.splice(toIndex, 0, list);
+        let list = this.#index[fromIndex];
+        this.#index.splice(fromIndex, 1);
+        this.#index.splice(toIndex, 0, list);
         this.saveOrder();
         this.onListsChanged();
     }
@@ -129,7 +110,7 @@ class Database
             return;
 
         // Check if a list with this name already exists
-        if (this.#lists.some(x => x.name == to))
+        if (this.#index.some(x => x.name == to))
             throw new Error("A list with this name already exists");
 
         // Find the list in the index
@@ -146,7 +127,7 @@ class Database
         localStorage.removeItem(`${from}.list`);
 
         // Update the index
-        this.#lists[listIndex].name = to;
+        this.#index[listIndex].name = to;
 
         // Save and fire
         this.saveOrder();
@@ -156,6 +137,33 @@ class Database
     onListsChanged()
     {
         notify("reloadLists");
+    }
+
+    updateIndex(list)
+    {
+        // Find the index entry for this list
+        let listIndex = this.findListIndex(list.name);
+        if (listIndex < 0)
+            return;
+
+        // Update counts
+        let index = this.#index[listIndex];
+        index.count = 0;
+        index.checked = 0;
+        for (let i=0; i<list.items.length; i++)
+        {
+            let item = list.items[i];
+            if (item.separator)
+                continue;
+            if (item.count == 0)
+                continue;
+
+            index.count++;
+            if (item.checked)
+                index.checked++;
+        }
+
+        this.onListsChanged();
     }
 
     getList(listname)
@@ -174,31 +182,17 @@ class Database
 
     addItemToList(list, item)
     {
-        // Find the index entry for this list
-        let listIndex = this.findListIndex(list.name);
-        if (listIndex < 0)
-            return;
-
         // Work out next id
         item.id = allocateItemId(list);
         list.items.push(item);
 
-        // Update list index
-        this.#lists[listIndex].count += item.separator ? 0 : 1;
-        this.#lists[listIndex].checked += item.checked ? 1 : 0;
-        this.onListsChanged();
-
-        // Save and notify
+        // Update index, save and notify
+        this.updateIndex(list);
         this.saveList(list);
     }
 
     deleteItemFromList(list, item)
     {
-        // Find the index entry for this list
-        let listIndex = this.findListIndex(list.name);
-        if (listIndex < 0)
-            return;
-
         // Find list item
         let index = list.items.indexOf(item);
         if (index < 0)
@@ -207,12 +201,8 @@ class Database
         // Remove from list
         list.items.splice(index, 1);
 
-        // Update list index
-        this.#lists[listIndex].count -= item.separator ? 0 : 1;
-        this.#lists[listIndex].checked -= item.checked ? 1 : 0;
-        this.onListsChanged();
-
-        // Save and notify
+        // Update index, save and notify
+        this.updateIndex(list);
         this.saveList(list);
     }
 
@@ -232,19 +222,11 @@ class Database
         if (item.separator)
             return;
 
-        // Find the index entry for this list
-        let listIndex = this.findListIndex(list.name);
-        if (listIndex < 0)
-            return;
-
         // Toggle check
         item.checked = !item.checked;
 
-        // Update index
-        this.#lists[listIndex].checked += item.checked ? 1 : -1;
-        this.onListsChanged();
-
-        // Save the list
+        // Update index, save and notify
+        this.updateIndex(list);
         this.saveList(list);
     }
 
@@ -261,13 +243,8 @@ class Database
             // Handle checked item being converted to separator
             if (newItem.separator && item.checked)
             {
-                this.#lists[listIndex].checked--;
                 item.checked = false;
             }
-
-            // Update count of items
-            this.#lists[listIndex].count += item.separator ? 1 : -1;
-            this.onListsChanged();
 
             // Update item separator flag
             item.separator = newItem.separator;
@@ -281,7 +258,8 @@ class Database
         // Update item name
         item.name = newItem.name;
         
-        // Save list
+        // Update index, save and notify
+        this.updateIndex(list);
         this.saveList(list);
     }
 
@@ -293,19 +271,29 @@ class Database
 
         // Update the count
         item.count = count;
+
+        // Update index, save and notify
+        this.updateIndex(list);
         this.saveList(list);
     }
 
     setItemCountAll(list, count)
     {
+
         for (let i=0; i<list.items.length; i++)
         {
+            let item = list.items[i];
+
             // Can't turn separators on/off
-            if (!list.items[i].separator)
-                list.items[i].count = count;
+            if (!item.separator)
+            {
+                item.count = count;
+                item.checked = false;
+            }
         }
 
-        // Update the count
+        // Update index, save and notify
+        this.updateIndex(list);
         this.saveList(list);
     }
 

@@ -287,8 +287,9 @@ export class ListPage extends Component
                         type: "div .buttons-left",
                         $: [
                             {
-                                type: "button .subtle",
+                                type: "button",
                                 $: c => c.editMode ? "Done" : "Edit",
+                                class_subtle: c => !c.editMode,
                                 class_accent: c => c.editMode,
                                 on_click: "onEdit",
                             }

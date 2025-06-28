@@ -96,7 +96,7 @@ export class HomePage extends Component
                                 type: "a",
                                 href: "#",
                                 on_click: () => window.location.reload(),
-                                text: " v0.0.26",
+                                text: " v0.0.27",
                             }
                         ]
                     },
@@ -173,8 +173,9 @@ export class HomePage extends Component
                         type: "div .buttons-left",
                         $: [
                             {
-                                type: "button .subtle",
+                                type: "button",
                                 $: c => c.editMode ? "Done" : "Edit",
+                                class_subtle: c => !c.editMode,
                                 class_accent: c => c.editMode,
                                 on_click: "onEdit",
                             }
