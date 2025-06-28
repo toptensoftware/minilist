@@ -180,6 +180,20 @@ class Database
         return list;
     }
 
+    addItemsToList(list, items)
+    {
+        for (let i=0; i<items.length; i++)
+        {
+            let item = items[i];
+            item.id = allocateItemId(list);
+            list.items.push(item);
+        }
+
+        // Update index, save and notify
+        this.updateIndex(list);
+        this.saveList(list);
+    }
+
     addItemToList(list, item)
     {
         // Work out next id

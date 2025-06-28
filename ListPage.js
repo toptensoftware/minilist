@@ -5,6 +5,7 @@ import { DragHandler } from "./DragHandler.js";
 import { AddItemDialog } from "./AddItemDialog.js";
 import { EditItemDialog } from "./EditItemDialog.js";
 import { positionPopover } from "./positionPopover.js";
+import { formatText, parseText } from "./TextFormat.js";
 
 export class ListPage extends Component
 {
@@ -139,7 +140,7 @@ export class ListPage extends Component
         }
     }
 
-    onMenuCommand(ev)
+    async onMenuCommand(ev)
     {
         switch (ev.target.id)
         {
@@ -154,6 +155,15 @@ export class ListPage extends Component
 
             case "clear-all":
                 db.setItemCountAll(this.#list, 0);
+                break;
+
+            case "paste-items":
+                let items = parseText(await navigator.clipboard.readText());
+                db.addItemsToList(this.#list, items);
+                break;
+
+            case "copy-items":
+                navigator.clipboard.writeText(formatText(this.getItemsFiltered()));
                 break;
         }
     }
@@ -229,6 +239,9 @@ export class ListPage extends Component
                                     $.hr().display(c => c.pickMode),
                                     $.a("Clear All").id("clear-all").display(c => c.pickMode),
                                     $.a("Select All").id("select-all").display(c => c.pickMode),
+                                    $.hr(),
+                                    $.a("Paste Items").id("paste-items"),
+                                    $.a("Copy Items").id("copy-items"),
                                 ]
                             }
                         ]
