@@ -35,6 +35,12 @@ class Main extends Component
 // Main entry point, create Application and mount
 export function main()
 {
+    document.addEventListener("contextmenu",function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+       return false;
+    }); 
+
     new Meta().mount("head");
     new Main().mount("body");
     router.start();

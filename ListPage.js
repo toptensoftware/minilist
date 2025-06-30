@@ -165,7 +165,25 @@ export class ListPage extends Component
             case "copy-items":
                 navigator.clipboard.writeText(formatText(this.getItemsFiltered()));
                 break;
+
+            case "insert-above":
+            case "insert-below":
+            {
+                let insertPos = this.#list.items.indexOf(this.#contextMenuItem);
+                if (insertPos < 0)
+                    return;
+                if (ev.target.id == "insert-below")
+                    insertPos++;
+
+                let dlg = new AddItemDialog((item) => {
+                    db.addItemToList(this.#list, item, insertPos);
+                    insertPos++;
+                });
+                dlg.showModal();
+                break;
+            }
         }
+        ev.preventDefault();
     }
 
     onFinishPicking()
@@ -199,7 +217,106 @@ export class ListPage extends Component
         }
 
     }
-    
+
+    #hold = null;
+
+    cancelHold()
+    {
+        if (this.#hold)
+        {
+            clearTimeout(this.#hold.timer);
+            window.removeEventListener("pointerup", this.#hold.pointerUp);
+            this.#hold = null;
+        }
+    }
+
+    onListPointerDown(ev)
+    {
+        if (!this.#hold)
+        {
+            this.#hold = { 
+                x: ev.clientX, 
+                y: ev.clientY,
+                timer: setTimeout(() => {
+                    this.cancelHold();
+                    this.onShowContextMenu(ev);
+
+                }, 500),
+                pointerUp: (ev) => this.cancelHold(),
+            };
+            window.addEventListener("pointerup", this.#hold.pointerUp);
+        }
+    }
+
+    onListPointerMove(ev)
+    {
+        if (this.#hold)
+        {
+            if (Math.abs(this.#hold.x - ev.clientX) > 5 ||
+                Math.abs(this.#hold.y - ev.clientY) > 5)
+            {
+                this.cancelHold();
+            }
+        }
+    }
+
+    #contextMenuItem;
+    onShowContextMenu(ev)
+    {
+        let elItem = ev.target.closest(".list-item");
+        if (!elItem)
+            return;
+        let itemId = elItem.dataset.id;
+        if (!itemId)
+            return;
+        let item = this.#list.items.find(x => x.id == itemId);
+        if (!item)
+            return;
+        this.#contextMenuItem = item;
+
+        this.elContextMenu.showPopover();
+
+        let first = true;
+        let self = this;
+        let onClick;
+        let onPointerDown;
+
+        this.elContextMenu.addEventListener("click", onClick = function(e)
+        {
+            self.elContextMenu.hidePopover();
+        });
+
+        // Watch for pointer down outside to close menu
+        window.addEventListener("pointerdown", onPointerDown = function(e)
+        {
+            if (e.target.closest("nav.menu"))
+                return;
+            self.elContextMenu.hidePopover();
+            e.stopPropagation();
+            e.preventDefault();
+
+            // Suppress the next click
+            document.addEventListener('click', function suppressEvent(e) {
+                document.removeEventListener('click', suppressEvent, true);
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                e.stopPropagation();
+            }, true);
+        });
+
+        // When closed, remove pointer up handler
+        this.elContextMenu.addEventListener("toggle", function onToggle(e)
+        {
+            if (e.newState == "closed")
+            {
+                self.elContextMenu.removeEventListener("toggle", onToggle);
+                self.elContextMenu.removeEventListener("click", onClick);
+                window.removeEventListener("pointerdown", onPointerDown);
+            }
+
+        });
+
+    }
 
     get pageTitle() { return this.#list.name; }
     get list() { return this.#list; }
@@ -251,6 +368,8 @@ export class ListPage extends Component
             {
                 type: "div .list",
                 bind: "elList",
+                on_pointerdown: "onListPointerDown",
+                on_pointermove: "onListPointerMove",
                 $: {
                     foreach: {
                         items: c => c.getItemsFiltered(),
@@ -258,6 +377,7 @@ export class ListPage extends Component
                     },
                     type: "div",
                     class: "list-item",
+                    "data-id": i => i.id,
                     class_checked: (i, ctx) => ctx.outer.model.getItemChecked(i),
                     class_separator: i => i.separator,
                     on_click: (i, ev, ctx) => ctx.outer.model.onItemClick(i, ev),
@@ -340,7 +460,17 @@ export class ListPage extends Component
                         ]
                     }
                 ]
+            },
+            {
+                type: "nav .menu popover='manual' data-auto-close=1 #context-menu",
+                on_click: "onMenuCommand",
+                bind: "elContextMenu",
+                $: [
+                    $.a("Insert Above").id("insert-above"),
+                    $.a("Insert Below").id("insert-below"),
+                ]
             }
+
         ]
     }
 }
@@ -371,6 +501,9 @@ css`
 
 #list
 {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+
     header
     {
         width: 100%;
@@ -405,26 +538,6 @@ css`
             color: var(--body-text-color);
             flex-grow: 1;
         }
-
-        .menu
-        {
-            border: 1px solid var(--accent-color);
-            border-radius: 10px;
-            padding: 10px 0;
-            text-align: left;
-            a
-            {
-                display: block;
-                padding: 10px 20px;
-                &:hover
-                {
-                    background-color: rgb(from var(--fore-color) r g b / 10%);
-                    color: unset;
-                }
-            }
-            
-        }
-
     }
 
     .list
@@ -635,6 +748,25 @@ css`
             align-items: center;
             width: 80px;
         }
+    }
+
+    .menu
+    {
+        border: 1px solid var(--accent-color);
+        border-radius: 10px;
+        padding: 10px 0;
+        text-align: left;
+        a
+        {
+            display: block;
+            padding: 10px 20px;
+            &:hover
+            {
+                background-color: rgb(from var(--fore-color) r g b / 10%);
+                color: unset;
+            }
+        }
+        
     }
 }
 `

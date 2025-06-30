@@ -194,11 +194,18 @@ class Database
         this.saveList(list);
     }
 
-    addItemToList(list, item)
+    addItemToList(list, item, position)
     {
         // Work out next id
         item.id = allocateItemId(list);
-        list.items.push(item);
+        if (position !== undefined)
+        {
+            list.items.splice(position, 0, item);
+        }
+        else
+        {
+            list.items.push(item);
+        }
 
         // Update index, save and notify
         this.updateIndex(list);
