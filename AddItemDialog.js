@@ -26,9 +26,22 @@ export class AddItemDialog extends Dialog
         }
         this.itemName = "";
         this.separator = false;
-        this.invalidate();
-        this.chkSeparator.focus();
-        this.elItemName.focus();
+        this.update();
+
+        // Hackfest because iOS is too stupid to
+        // reenable the shift key on an auto-cap input
+        // when the field is cleared.
+        // Fix is to temporarily move focus to another
+        // input and then back again
+        let temp = document.createElement("INPUT");
+        temp.style.opacity = "0.0";
+        temp.style.position = "absolute";
+        this.elItemName.parentNode.appendChild(temp);
+        temp.focus();
+        setTimeout(() => {
+            this.elItemName.focus();
+            temp.remove();
+        }, 0);
     }
 
     onSave(ev)
