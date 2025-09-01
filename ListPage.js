@@ -166,6 +166,17 @@ export class ListPage extends Component
                 navigator.clipboard.writeText(formatText(this.getItemsFiltered()));
                 break;
 
+            case "edit-item":
+            {
+                let dlg = new EditItemDialog(this.#list, this.#contextMenuItem);
+                dlg.showModal();
+                break;  
+            }
+
+            case "delete-item":
+                db.deleteItemFromList(this.#list, this.#contextMenuItem);
+                break;
+
             case "insert-above":
             case "insert-below":
             {
@@ -468,6 +479,8 @@ export class ListPage extends Component
                 $: [
                     $.a("Insert Above").id("insert-above"),
                     $.a("Insert Below").id("insert-below"),
+                    $.a("Edit").id("edit-item"),
+                    $.a("Delete").id("delete-item"),
                 ]
             }
 
