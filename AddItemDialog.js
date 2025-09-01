@@ -27,6 +27,8 @@ export class AddItemDialog extends Dialog
         this.itemName = "";
         this.separator = false;
         this.invalidate();
+        this.chkSeparator.focus();
+        this.elItemName.focus();
     }
 
     onSave(ev)
@@ -53,6 +55,7 @@ export class AddItemDialog extends Dialog
                 placeholder: "Enter item",
                 input: "itemName",
                 on_keypress: "onKeyPress",
+                bind: "elItemName",
 
             },
             {
@@ -63,6 +66,7 @@ export class AddItemDialog extends Dialog
                         { 
                             type: "input type=checkbox .switch",
                             input: "separator",
+                            bind: "chkSeparator",
                         },
                         "Separator"
                     ],
