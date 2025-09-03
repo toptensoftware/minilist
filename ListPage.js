@@ -177,6 +177,10 @@ export class ListPage extends Component
                 db.deleteItemFromList(this.#list, this.#contextMenuItem);
                 break;
 
+            case "delete-checked-items":
+                db.deleteCheckedItemsFromList(this.#list);
+                break;
+
             case "insert-above":
             case "insert-below":
             {
@@ -370,6 +374,8 @@ export class ListPage extends Component
                                     $.hr(),
                                     $.a("Paste Items").id("paste-items"),
                                     $.a("Copy Items").id("copy-items"),
+                                    $.hr(),
+                                    $.a("Delete Checked Items").id("delete-checked-items"),
                                 ]
                             }
                         ]

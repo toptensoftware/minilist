@@ -227,6 +227,13 @@ class Database
         this.saveList(list);
     }
 
+    deleteCheckedItemsFromList(list)
+    {
+        list.items = list.items.filter(x => !x.checked);
+        this.updateIndex(list);
+        this.saveList(list);
+    }
+
     moveItemInList(list, fromIndex, toIndex)
     {
         let item = list.items[fromIndex];

@@ -96,7 +96,7 @@ export class HomePage extends Component
                                 type: "a",
                                 href: "#",
                                 on_click: () => window.location.reload(),
-                                text: " v0.0.32",
+                                text: " v0.0.33",
                             }
                         ]
                     },
